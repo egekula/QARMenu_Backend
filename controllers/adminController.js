@@ -1,75 +1,60 @@
 import pool from '../config/database.js';
 import { generateToken, hashPassword, comparePassword } from '../utils/auth.js';
+import bcrypt from 'bcrypt';
 
 export const registerAdmin = async (req, res) => {
   try {
-    // Sadece gerekli alanları al
     const { username, password, email } = req.body;
-    
+
     // Input validasyonu
     if (!username || !password || !email) {
-      return res.status(400).json({ error: 'Tüm alanlar zorunludur' });
+      return res.status(400).json({ 
+        error: 'Kullanıcı adı, şifre ve email zorunludur' 
+      });
     }
 
     // Email formatı kontrolü
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Geçersiz email formatı' });
+      return res.status(400).json({ 
+        error: 'Geçersiz email formatı' 
+      });
     }
 
-    // Kullanıcı adı ve email benzersizlik kontrolü
-    const existingUser = await pool.query(
+    // Kullanıcı adı veya email zaten var mı kontrolü
+    const userExists = await pool.query(
       'SELECT * FROM admins WHERE username = $1 OR email = $2',
       [username, email]
     );
 
-    if (existingUser.rows.length > 0) {
+    if (userExists.rows.length > 0) {
       return res.status(400).json({ 
         error: 'Bu kullanıcı adı veya email zaten kullanımda' 
       });
     }
 
-    // Şifre güvenlik kontrolü
-    if (password.length < 8) {
-      return res.status(400).json({ 
-        error: 'Şifre en az 8 karakter olmalıdır' 
-      });
-    }
-
     // Şifreyi hashle
-    const hashedPassword = await hashPassword(password);
+    const saltRounds = 10;
+    const password_hash = await bcrypt.hash(password, saltRounds);
 
-    // Sadece izin verilen alanları kaydet
+    // Yeni admin oluştur
     const result = await pool.query(
       `INSERT INTO admins (username, password_hash, email, role) 
        VALUES ($1, $2, $3, $4) 
        RETURNING id, username, email, role`,
-      [username, hashedPassword, email, 'admin']
+      [username, password_hash, email, 'admin']
     );
 
-    // JWT token oluştur
-    const token = generateToken({
-      id: result.rows[0].id,
-      username: result.rows[0].username,
-      role: result.rows[0].role
-    });
-
     res.status(201).json({
-      message: 'Admin başarıyla oluşturuldu',
-      token,
-      admin: {
-        id: result.rows[0].id,
-        username: result.rows[0].username,
-        email: result.rows[0].email,
-        role: result.rows[0].role
-      }
+      message: 'Admin başarıyla kaydedildi',
+      admin: result.rows[0]
     });
 
   } catch (error) {
-    console.error('Register error:', error); // Hatayı konsola yazdır
+    console.error('Register error:', error); // Hata detayını logla
     res.status(500).json({ 
       error: 'Sunucu hatası',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
