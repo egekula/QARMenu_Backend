@@ -17,22 +17,31 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // CORS ayarları
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [];
+
 const corsOptions = {
-  origin: [
-    'qar-menu-frontend-2xtnfs7mf-emegsofts-projects.vercel.app',
-    'https://qarmenu-frontend.vercel.app',
-    'http://localhost:3002'
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('Blocked by CORS:', origin);
+      callback(null, false);
+    }
+  },
   credentials: true,
-  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
 };
 
-// Middleware
+// CORS middleware'ini uygula
 app.use(cors(corsOptions));
-app.use(express.json());
+
+// Pre-flight istekleri için
 app.options('*', cors(corsOptions));
+
+// Body parser middleware
+app.use(express.json());
 
 // Public Routes (no authentication needed)
 app.use('/api/restaurants', restaurantRoutes);
