@@ -5,30 +5,18 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'AR Dining API',
+      title: 'QARMenu API',
       version: '1.0.0',
-      description: 'API documentation for AR Dining application',
+      description: 'QARMenu API Documentation',
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
+        url: 'https://qarmenubackend-production.up.railway.app',
+        description: 'Production server',
+      }
     ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-    security: [{
-      bearerAuth: [],
-    }],
   },
-  apis: ['./routes/*.js'], // Path to the API routes
+  apis: ['./routes/*.js'], 
 };
 
 const specs = swaggerJsdoc(options);
