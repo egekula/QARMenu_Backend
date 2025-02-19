@@ -17,7 +17,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://qarmenubackend-production.up.railway.app', // Geliştirme için. Prodüksiyonda spesifik domainleri belirtin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Public Routes (no authentication needed)
