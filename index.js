@@ -19,11 +19,12 @@ const PORT = process.env.PORT || 3001;
 // CORS ayarları
 const corsOptions = {
   origin: [
-    'https://qar-menu-frontend-6oondgavg-emegsofts-projects.vercel.app',
+    'qar-menu-frontend-2xtnfs7mf-emegsofts-projects.vercel.app',
     'https://qarmenu-frontend.vercel.app',
     'http://localhost:3002'
   ],
   credentials: true,
+  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
