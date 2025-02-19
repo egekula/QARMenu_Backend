@@ -15,21 +15,24 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const cors = require('cors');
 
-// Middleware
-app.use(cors({
+// CORS ayarları
+const corsOptions = {
   origin: [
     'https://qar-menu-frontend-6oondgavg-emegsofts-projects.vercel.app',
     'https://qarmenu-frontend.vercel.app',
-    'http://localhost:3002'  // Geliştirme ortamı için
+    'http://localhost:3002'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+// Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
-app.options('*', cors());
+app.options('*', cors(corsOptions));
+
 // Public Routes (no authentication needed)
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/menu', menuRoutes);
