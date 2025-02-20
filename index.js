@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 
 // CORS ayarları - tüm originlere izin ver
 const corsOptions = {
-  origin: '*', // Tüm originlere izin ver
+  origin: 'https://qar-menu-frontend.vercel.app', // Tüm originlere izin ver
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
