@@ -6,7 +6,7 @@ dotenv.config()
 const redisClient = createClient({
   url: process.env.REDIS_URL,
   socket: {
-    tls: true,
+    tls: false,
     rejectUnauthorized: false,
     connectTimeout: 10000,
     keepAlive: 5000,
