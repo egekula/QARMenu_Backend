@@ -28,67 +28,17 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/admin:
- *   get:
- *     summary: Test endpoint for admin route
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: Admin route is working
- */
-router.get('/', (req, res) => {
-  res.json({ message: 'Admin API is working' });
-});
-
-/**
- * @swagger
- * /api/admin/login:
- *   post:
- *     summary: Login for admin
- *     tags: [Admin]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - username
- *               - password
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- */
-router.post('/login', loginAdmin);
-
-/**
- * @swagger
  * /api/admin/register:
  *   post:
- *     summary: Register new admin
+ *     summary: Register a new admin
  *     tags: [Admin]
+ *     security: []  # No security for registration
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - username
- *               - password
- *               - email
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *               email:
- *                 type: string
+ *             $ref: '#/components/schemas/Admin'
  *     responses:
  *       201:
  *         description: Admin registered successfully
@@ -97,16 +47,33 @@ router.post('/register', registerAdmin);
 
 /**
  * @swagger
- * /api/admin/refresh-token:
+ * /api/admin/login:
  *   post:
- *     summary: Refresh JWT token
+ *     summary: Admin login
  *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "admin"
+ *               password:
+ *                 type: string
+ *                 example: "securepassword123"
  *     responses:
  *       200:
- *         description: Token refreshed successfully
+ *         description: Login successful
  */
+router.post('/login', loginAdmin);
+
 router.post('/refresh-token', authenticateAdmin, refreshToken);
 
 export default router; 
