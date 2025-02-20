@@ -11,11 +11,7 @@ export const getCategoryPic = async (req, res) => {
     );
     
     if (result.rows.length === 0) {
-      // Default base64 resmi burada tanımlayabilirsiniz
-      return res.json({ 
-        base64_image: 'default_base64_string_here',
-        mime_type: 'image/jpeg' 
-      });
+      return res.json({ image_url: '/images/categories/default.jpg' });
     }
     
     res.json(result.rows[0]);
@@ -38,18 +34,16 @@ export const getCategoryPics = async (req, res) => {
 // Yeni category pic ekle
 export const createCategoryPic = async (req, res) => {
   try {
-    const { category_name, base64_image, mime_type } = req.body;
+    const { category_name, image_url } = req.body;
     
-    if (!base64_image || !mime_type) {
-      return res.status(400).json({ error: 'base64_image ve mime_type zorunludur' });
-    }
-
     const result = await pool.query(
-      'INSERT INTO category_pics (category_name, base64_image, mime_type) VALUES ($1, $2, $3) RETURNING *',
-      [category_name, base64_image, mime_type]
+      'INSERT INTO category_pics (category_name, image_url) VALUES ($1, $2) RETURNING *',
+      [category_name, image_url]
     );
 
+    // Cache'i temizle
     await clearCache('/api/category-pics');
+    
     res.status(201).json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -60,18 +54,20 @@ export const createCategoryPic = async (req, res) => {
 export const updateCategoryPic = async (req, res) => {
   try {
     const { id } = req.params;
-    const { category_name, base64_image, mime_type } = req.body;
+    const { category_name, image_url } = req.body;
     
     const result = await pool.query(
-      'UPDATE category_pics SET category_name = $1, base64_image = $2, mime_type = $3 WHERE id = $4 RETURNING *',
-      [category_name, base64_image, mime_type, id]
+      'UPDATE category_pics SET category_name = $1, image_url = $2 WHERE id = $3 RETURNING *',
+      [category_name, image_url, id]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Category pic not found' });
     }
 
+    // Cache'i temizle
     await clearCache('/api/category-pics');
+    
     res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
