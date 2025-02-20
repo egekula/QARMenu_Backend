@@ -1,6 +1,7 @@
 import pool from '../config/database.js';
 import { clearCache } from '../utils/cache.js';
 
+// Kategori adına göre resim getir
 export const getCategoryPic = async (req, res) => {
   try {
     const { categoryName } = req.params;
@@ -16,15 +17,6 @@ export const getCategoryPic = async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error in getCategoryPic:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const getAllCategoryPics = async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM category_pics');
-    res.json(result.rows);
-  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
@@ -50,7 +42,7 @@ export const createCategoryPic = async (req, res) => {
     );
 
     // Cache'i temizle
-    await clearCache('/api/category-pics/public');
+    await clearCache('/api/category-pics');
     
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -74,7 +66,7 @@ export const updateCategoryPic = async (req, res) => {
     }
 
     // Cache'i temizle
-    await clearCache('/api/category-pics/public');
+    await clearCache('/api/category-pics');
     
     res.json(result.rows[0]);
   } catch (error) {
@@ -97,7 +89,7 @@ export const deleteCategoryPic = async (req, res) => {
     }
 
     // Cache'i temizle
-    await clearCache('/api/category-pics/public');
+    await clearCache('/api/category-pics');
     
     res.json({ message: 'Category pic deleted successfully' });
   } catch (error) {
