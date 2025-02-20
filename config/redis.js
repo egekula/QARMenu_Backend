@@ -8,20 +8,17 @@ const redisClient = createClient({
   socket: {
     tls: true,
     rejectUnauthorized: false,
-    keepAlive: 5000
+    connectTimeout: 10000,
+    keepAlive: 5000,
+    reconnectStrategy: (retries) => {
+      if (retries > 10) {
+        console.log('❌ Redis bağlantı denemesi maksimum sayıya ulaştı');
+        return false;
+      }
+      return Math.min(retries * 1000, 10000);
+    }
   },
-  retry_strategy: function(options) {
-    if (options.error && options.error.code === 'ECONNREFUSED') {
-      return new Error('Redis sunucusu reddetti');
-    }
-    if (options.total_retry_time > 1000 * 60 * 60) {
-      return new Error('Retry time exhausted');
-    }
-    if (options.attempt > 10) {
-      return undefined;
-    }
-    return Math.min(options.attempt * 100, 3000);
-  }
+  legacyMode: false
 })
 
 // Bağlantıyı başlat
@@ -31,27 +28,32 @@ const connectRedis = async () => {
     console.log('✅ Redis connection established')
   } catch (err) {
     console.error('❌ Redis connection failed:', err)
-    // Bağlantı hatası durumunda yeniden deneme
-    setTimeout(connectRedis, 5000)
   }
 }
 
 // İlk bağlantıyı başlat
-connectRedis()
+connectRedis().catch(console.error)
 
-// Bağlantı hatası dinleyicisi
+// Hata yönetimi
 redisClient.on('error', (err) => {
   console.error('Redis Error:', err)
 })
 
-// Yeniden bağlantı dinleyicisi
-redisClient.on('reconnecting', () => {
-  console.log('Redis reconnecting...')
+redisClient.on('ready', () => {
+  console.log('✅ Redis is ready')
 })
 
-// Bağlantı başarılı dinleyicisi
-redisClient.on('connect', () => {
-  console.log('Redis connected')
+redisClient.on('reconnecting', () => {
+  console.log('⏳ Redis reconnecting...')
+})
+
+redisClient.on('end', () => {
+  console.log('❌ Redis connection ended')
+})
+
+process.on('SIGINT', () => {
+  redisClient.quit()
+  process.exit()
 })
 
 export default redisClient 
